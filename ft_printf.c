@@ -2,32 +2,20 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-
 typedef struct	{
 	va_list	arg;
 	int	count;
 }			t_hold;
 
-void	ft_putchar(char c)
+void	putchar(char c)
 {
 	write(1, &c, 1);
 }
 
-void	ft_putstr(char *s)
+void	putstr(char *s)
 {
 	while (*s)
 		write(1, s++, 1);
-}
-
-void	ft_str(t_hold *args)
-{
-	char *str;
-	int	i;
-
-	str = va_arg(args->arg, char *);
-	i = 0;
-	while (str[i])
-		ft_putchar(str[i++]);
 }
 
 void	ft_itoa(int nb, int len)
@@ -55,7 +43,7 @@ void	ft_itoa(int nb, int len)
 		n /= 10;
 	}
 	while (str[i])
-		ft_putchar(str[i++]);
+		putchar(str[i++]);
 }
 
 static char	*ft_strsize(unsigned long num, int *i)
@@ -74,7 +62,18 @@ static char	*ft_strsize(unsigned long num, int *i)
 	return (str);
 }
 
-void	ft_putnbr(t_hold *args)
+void	ft_str(t_hold *args)
+{
+	char *str;
+	int	i;
+
+	str = va_arg(args->arg, char *);
+	i = 0;
+	while (str[i])
+		putchar(str[i++]);
+}
+
+void	ft_int(t_hold *args)
 {
 	int	len = 1;
 	int	nb_to_convert;
@@ -96,7 +95,7 @@ void	ft_putnbr(t_hold *args)
 	args->count += len;	
 }
 
-void	ft_puthex(t_hold *args)
+void	ft_hex(t_hold *args)
 {
 	unsigned int	n;
 	int				i = 1;
@@ -115,27 +114,26 @@ void	ft_puthex(t_hold *args)
 		i--;
 		args->count += 1;
 	}
-	ft_putstr(str);
+	putstr(str);
 	free(str);
 }
 
-void	convert_type(char c, t_hold *args)
+void	get_flag(char c, t_hold *args)
 {
 	if (c == 's')
 		ft_str(args);
 	else if (c == 'd')
-		ft_putnbr(args);
+		ft_int(args);
 	else if (c == 'x')
-		ft_puthex(args);
+		ft_hex(args);
 	else if (c == '%')
 	{
-		ft_putchar('%');
+		putchar('%');
 		args->count++;
 	}
 }
 
-
-static t_hold	*init_args(void)
+static t_hold	*init(void)
 {
 	t_hold	*args;
 
@@ -149,22 +147,20 @@ static t_hold	*init_args(void)
 int	ft_printf(char	*str, ...)
 {
 	t_hold	*args;
-	int	count;
-	int	i;
+	int	count = 0;
+	int	i = 0;
 
-	i = 0;
-	count = 0;
-	args = init_args();
+	args = init();
 	va_start(args->arg, str);
 	while (str[i])
 	{
 		if (str[i] != '%')
 		{
-			ft_putchar(str[i]);
+			putchar(str[i]);
 			count++;
 		}
 		else if (str[i] == '%')
-			convert_type(str[++i], args);
+			get_flag(str[++i], args);
 		i++;	
 	}
 	count += args->count;
